@@ -98,6 +98,9 @@ class OpenRouterClient:
         }
 
         response = requests.post(self.url, headers=headers, json=payload)
+        if response.status_code == 401:
+            logger.error("Authentication Error: Invalid or missing OPENROUTER_API_KEY. Please verify your .env file.")
+            raise Exception("OpenRouter Authentication Failed. Check your API key.")
         response.raise_for_status()
         return response.json()
 
@@ -184,7 +187,7 @@ class NewFileHandler(FileSystemEventHandler):
 
     def on_created(self, event):
         if not event.is_directory and event.src_path.lower().endswith(('.png', '.jpg', '.jpeg')):
-            time.sleep(2)  # Wait for file to stabilize
+            time.sleep(2)  
             self.manager.process_local_file(Path(event.src_path))
 
 def main():
