@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-# Configure Logging
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -21,7 +21,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Load environment variables
+
 load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -29,16 +29,49 @@ OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", r"C:\Users\RITANKAR\Desktop\NoBroker\f
 INPUT_DIR = Path(os.getenv("INPUT_DIR", r"C:\Users\RITANKAR\Desktop\NoBroker\floorplan\input"))
 TRACKER_FILE = Path("processed_files.json")
 
-# Model configuration from n8n JSON
-MODEL = "google/gemini-2.5-flash-image-preview" 
+MODEL = "google/gemini-2.5-flash-image" 
 PROMPT = (
-    "Convert this 2D floor plan into a clean 3D isometric architectural render. "
-    "Requirements: Isometric view at 30-35 degree angle, show all walls with 9-10 ft height, "
-    "maintain exact room layout and proportions, remove all text labels from the image, "
-    "modern realistic furniture matching room types, soft lighting with ambient occlusion, "
-    "light beige tiled flooring, neutral colours, clean white background, professional "
-    "architectural visualization style, floating cutaway view with no ceiling, 4K quality render. "
-    "DO NOT use top-down view, orthographic projection, wide-angle lens, or distort the original layout proportions."
+    "Convert this 2D floor plan into a photorealistic 3D isometric architectural visualization "
+    "that matches professional real-estate rendering quality. "
+
+    # Camera & Perspective
+    "CAMERA: True isometric view at 40-45 degree elevated angle from top-right perspective. "
+    "3/4 cutaway view with NO ceiling — all rooms fully visible from above. "
+    "Walls rendered at exactly 9-10 ft height, clean flat tops with uniform thickness. "
+    "FORBIDDEN: top-down orthographic view, fisheye lens, perspective distortion, ceiling. "
+
+    # Layout Fidelity
+    "LAYOUT: Replicate the 2D floor plan with exact room shapes, sizes, and spatial relationships. "
+    "Preserve all wall positions, door openings, window placements, and room connectivity. "
+    "Clean right-angle geometry only. Do not rotate, mirror, or reinterpret the layout. "
+    "Remove all text, labels, dimensions, and annotations from the final render. "
+
+    # Materials & Finishes
+    "FLOORS: Uniform light beige/cream large-format ceramic tiles across all rooms. "
+    "WALLS: Smooth matte off-white/warm white plaster finish, flat wall tops. "
+    "Overall palette: warm neutral tones — ivory, cream, light greige, natural oak wood. "
+
+    # Furniture & Fixtures (matching the reference style)
+    "FURNITURE: Minimal Scandinavian-modern style. Low-profile furniture in light grey fabric and natural oak wood. "
+    "Master bedroom: king bed with grey linen, wooden headboard, two oak nightstands, wall art, table lamp. "
+    "Secondary bedrooms: queen beds with matching neutral bedding and oak side tables. "
+    "Living room: L-shaped or 3-seater light grey sofa, rectangular wooden coffee table, neutral area rug, "
+    "flat TV on a low wooden media unit. "
+    "Dining area: small white dining table with 2-4 simple grey chairs, potted plant centerpiece. "
+    "Kitchen: white modular cabinets with integrated appliances, sink visible, clean countertop. "
+    "Bathrooms: white toilet, wall-mounted basin or vanity, glass shower enclosure where applicable. "
+    "All furniture must be correctly scaled to room size. No oversized or undersized pieces. "
+
+    # Lighting
+    "LIGHTING: Soft uniform global illumination simulating bright overcast daylight. "
+    "Gentle ambient occlusion at wall-floor junctions and furniture bases for subtle depth. "
+    "No harsh shadows, no spotlights, no colored lighting — clean and evenly lit throughout. "
+
+    # Render Quality & Output
+    "RENDER: Ultra-sharp 4K photorealistic architectural visualization. "
+    "Pure white background with slight drop shadow under the floor plate for lift. "
+    "Professional real-estate marketing render — clean, minimal, no decorative overlays, "
+    "no watermarks, no annotations, single image output only."
 )
 
 class ProcessTracker:
