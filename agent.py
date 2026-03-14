@@ -98,9 +98,6 @@ class OpenRouterClient:
         }
 
         response = requests.post(self.url, headers=headers, json=payload)
-        if response.status_code == 401:
-            logger.error("Authentication Error: Invalid or missing OPENROUTER_API_KEY. Please verify your .env file.")
-            raise Exception("OpenRouter Authentication Failed. Check your API key.")
         response.raise_for_status()
         return response.json()
 
