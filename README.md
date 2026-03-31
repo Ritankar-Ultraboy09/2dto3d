@@ -1,5 +1,6 @@
 # 2D to 3D Floor Plan Render Agent
 # Only input and ouput of .png image files.
+# UPDATE:- Recently added parsing image urls from csv. 
 A functional agentic codebase that automates the conversion of 2D floor plan images into 3D isometric architectural renders using the OpenRouter API.
 
 ## Setup

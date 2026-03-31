@@ -3,3 +3,7 @@ node_modules/
 dist/
 *.log
 .env
+2dto3d/
+input/
+output/
+__pycache__/

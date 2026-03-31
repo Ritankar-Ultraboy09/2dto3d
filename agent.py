@@ -5,10 +5,9 @@ import json
 import time
 import logging
 import argparse
+import csv
 from pathlib import Path
 from dotenv import load_dotenv
-from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
 
 
 logging.basicConfig(
@@ -25,8 +24,8 @@ logger = logging.getLogger(__name__)
 load_dotenv()
 
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
-OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", r"C:\Users\RITANKAR\Desktop\NoBroker\floorplan\output"))
-INPUT_DIR = Path(os.getenv("INPUT_DIR", r"C:\Users\RITANKAR\Desktop\NoBroker\floorplan\input"))
+OUTPUT_DIR = Path(os.getenv("OUTPUT_DIR", r"C:\Users\KIIT\Desktop\Nobroker\2dto3d\output"))
+INPUT_DIR = Path(os.getenv("INPUT_DIR", r"C:\Users\KIIT\Desktop\Nobroker\2dto3d\input"))
 TRACKER_FILE = Path("processed_files.json")
 
 MODEL = "google/gemini-2.5-flash-image" 
@@ -211,18 +210,10 @@ class WorkflowManager:
         except Exception as e:
             logger.error(f"Error processing URL {url}: {e}")
 
-class NewFileHandler(FileSystemEventHandler):
-    def __init__(self, manager):
-        self.manager = manager
-
-    def on_created(self, event):
-        if not event.is_directory and event.src_path.lower().endswith(('.png', '.jpg', '.jpeg')):
-            time.sleep(2)  
-            self.manager.process_local_file(Path(event.src_path))
-
 def main():
     parser = argparse.ArgumentParser(description="Floor Plan Render Agent")
     parser.add_argument("--url", help="Process a floor plan from a URL")
+    parser.add_argument("--rows", type=int, help="Number of rows to process from CSV")
     args = parser.parse_args()
 
     if not OPENROUTER_API_KEY:
@@ -238,23 +229,21 @@ def main():
         return
 
     logger.info("Starting Floor Plan Render Agent...")
-    logger.info(f"Monitoring Input: {INPUT_DIR}")
     logger.info(f"Output Directory: {OUTPUT_DIR}")
 
-    INPUT_DIR.mkdir(parents=True, exist_ok=True)
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-    event_handler = NewFileHandler(manager)
-    observer = Observer()
-    observer.schedule(event_handler, str(INPUT_DIR), recursive=False)
-    observer.start()
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
+    with open('floorplan.csv', 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        next(reader)
+        row_count = 0
+        for row in reader:
+            if args.rows is not None and row_count >= args.rows:
+                break
+            urls = [cell for cell in row if cell.startswith('http')]
+            for url in urls:
+                manager.process_url(url)
+            row_count += 1
 
 if __name__ == "__main__":
     main()
